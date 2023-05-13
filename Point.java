@@ -96,16 +96,14 @@ public class Point implements Comparable<Point> {
             if (Math.round(origin.slopeTo(p)) > Math.round(origin.slopeTo(q))) return 1;
             if (p.y < q.y) return -1;
             if (p.y > q.y) return +1;
-            if (p.x < q.x) return -1;
-            if (p.x > q.x) return +1;
-            return 0;
+            return Integer.compare(p.x, q.x);
         }
     }
 
 
     /**
      * Returns a string representation of this point.
-     * This method is provide for debugging;
+     * This method is provided for debugging;
      * your program should not rely on the format of the string representation.
      *
      * @return a string representation of this point
