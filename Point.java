@@ -1,13 +1,3 @@
-/******************************************************************************
- *  Compilation:  javac Point.java
- *  Execution:    java Point
- *  Dependencies: none
- *
- *  An immutable data type for points in the plane.
- *  For use on Coursera, Algorithms Part I programming assignment.
- *
- ******************************************************************************/
-
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.util.Comparator;
