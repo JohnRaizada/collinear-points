@@ -19,57 +19,8 @@ public class FastCollinearPoints {
             if (point == null) throw new IllegalArgumentException();
         }
         checkForRepeatedPoints(points);
-
-        // getLineSegmentsFromPoints(Arrays.copyOf(points, points.length));
-
-        Point[] pointsNaturalOrder = Arrays.copyOf(points, points.length);
-        Point[] pointsSlopeOrder = Arrays.copyOf(points, points.length);
-
-        ArrayList<LineSegment> lineSegments = new ArrayList<>();
-
-        Arrays.sort(pointsNaturalOrder);
-        Arrays.sort(pointsSlopeOrder);
-
-        for (int i = 0; i < pointsNaturalOrder.length; i++) {
-            Point origin = pointsNaturalOrder[i];
-            Point lineBeginning = null;
-            Arrays.sort(pointsSlopeOrder);
-            Arrays.sort(pointsSlopeOrder, origin.slopeOrder());
-            int pointsCount = 1;
-            for (int k = i + 1; k < pointsSlopeOrder.length - 1; k++) {
-
-                double currentPointSlopeToOrigin = pointsSlopeOrder[k].slopeTo(origin);
-                double nextPointSlopeToOrigin = pointsSlopeOrder[k + 1].slopeTo(origin);
-
-                if (currentPointSlopeToOrigin == nextPointSlopeToOrigin) {
-                    pointsCount++;
-
-                    if (pointsCount == 2) {
-                        lineBeginning = pointsSlopeOrder[k];
-                        pointsCount++;
-                    }
-                    else if (pointsCount >= 4 && k + 1 == pointsSlopeOrder.length - 1) {
-                        if (lineBeginning.compareTo(origin) > 0)
-                            lineSegments.add(
-                                    new LineSegment(lineBeginning, pointsSlopeOrder[k + 1]));
-                        pointsCount = 1;
-                    }
-
-                }
-
-                else if (pointsCount >= 4) {
-                    if (lineBeginning.compareTo(origin) > 0)
-                        lineSegments.add(new LineSegment(origin, pointsSlopeOrder[k]));
-                    pointsCount = 1;
-                }
-                else pointsCount = 1;
-
-            }
-        }
-
+        ArrayList<LineSegment> lineSegments = getLineSegmentsFromPoints(points);
         segments = lineSegments.toArray(new LineSegment[0]);
-
-        // this.segments = generateSegments();
     }
 
     private void checkForRepeatedPoints(Point[] points) {
@@ -81,10 +32,50 @@ public class FastCollinearPoints {
         }
     }
 
+    private ArrayList<LineSegment> getLineSegmentsFromPoints(Point[] points) {
+        ArrayList<LineSegment> lineSegments = new ArrayList<>();
 
-    // private ArrayList<LineSegment> getLineSegmentsFromPoints(Point[] points) {
-    //
-    // }
+        Point[] pointsNaturalOrder = Arrays.copyOf(points, points.length);
+        Point[] pointsSlopeOrder = Arrays.copyOf(points, points.length);
+
+        Arrays.sort(pointsNaturalOrder);
+        for (int i = 0; i < pointsNaturalOrder.length; i++) {
+            Point origin = pointsNaturalOrder[i];
+
+            Arrays.sort(pointsSlopeOrder);
+            Arrays.sort(pointsSlopeOrder, origin.slopeOrder());
+
+            Point lineBegin = null;
+            int pointsCount = 1;
+
+            for (int k = i + 1; k < pointsSlopeOrder.length - 1; k++) {
+                double currentPointSlopeToOrigin = pointsSlopeOrder[k].slopeTo(origin);
+                double nextPointSlopeToOrigin = pointsSlopeOrder[k + 1].slopeTo(origin);
+
+                if (currentPointSlopeToOrigin == nextPointSlopeToOrigin) {
+                    pointsCount++;
+
+                    if (pointsCount == 2) {
+                        lineBegin = pointsSlopeOrder[k];
+                    }
+                    else if (pointsCount >= 3 && k + 1 == pointsSlopeOrder.length - 1) {
+                        if (lineBegin.compareTo(origin) > 0)
+                            lineSegments.add(
+                                    new LineSegment(lineBegin, pointsSlopeOrder[k + 1]));
+                        pointsCount = 1;
+                    }
+                }
+
+                else if (pointsCount >= 3) {
+                    if (lineBegin.compareTo(origin) > 0)
+                        lineSegments.add(new LineSegment(origin, pointsSlopeOrder[k]));
+                    pointsCount = 1;
+                }
+                else pointsCount = 1;
+            }
+        }
+        return lineSegments;
+    }
 
     // the number of line segments
     public int numberOfSegments() {
