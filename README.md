@@ -6,6 +6,18 @@
 Assignment | [my coursera profile](https://www.coursera.org/user/045cf702be8b31ef1aa039e2b4f07db6)**
 
 ---
+<!-- TOC -->
+
+* [Collinear Points](#collinear-points)
+* [Task specification](#task-specification)
+    * [Point API](#point-api)
+    * [Line Segment API](#line-segment-api)
+    * [Brute force solution API](#brute-force-solution-api)
+    * [Fast solution API](#fast-solution-api)
+
+<!-- TOC -->
+
+---
 
 ### Task specification
 
