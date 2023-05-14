@@ -53,7 +53,7 @@ public class Point implements Comparable<Point> {
         if (divisible == 0) return 0;
         if (divisor == 0) return Double.POSITIVE_INFINITY;
 
-        return Math.round(divisible / divisor);
+        return divisible / divisor;
     }
 
     /**
@@ -92,11 +92,16 @@ public class Point implements Comparable<Point> {
         }
 
         public int compare(Point p, Point q) {
-            if (Math.round(origin.slopeTo(p)) < Math.round(origin.slopeTo(q))) return -1;
-            if (Math.round(origin.slopeTo(p)) > Math.round(origin.slopeTo(q))) return 1;
-            if (p.y < q.y) return -1;
-            if (p.y > q.y) return +1;
-            return Integer.compare(p.x, q.x);
+            double pSlope = origin.slopeTo(p);
+            double qSlope = origin.slopeTo(q);
+
+            return Double.compare(pSlope, qSlope);
+
+            // if (Math.round(origin.slopeTo(p)) < Math.round(origin.slopeTo(q))) return -1;
+            // if (Math.round(origin.slopeTo(p)) > Math.round(origin.slopeTo(q))) return 1;
+            // if (p.y < q.y) return -1;
+            // if (p.y > q.y) return +1;
+            // return Integer.compare(p.x, q.x);
         }
     }
 

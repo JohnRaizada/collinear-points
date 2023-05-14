@@ -6,10 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class FastCollinearPoints {
-    private static final int X_ORIGIN = 5000;
-    private static final int Y_ORIGIN = 5000;
-    private static final Point ORIGIN = new Point(X_ORIGIN, Y_ORIGIN);
-    private Point[] points;
     private LineSegment[] segments;
 
     /**
@@ -19,19 +15,64 @@ public class FastCollinearPoints {
      */
     public FastCollinearPoints(Point[] points) {
         if (points == null) throw new IllegalArgumentException();
-        this.points = Arrays.copyOf(points, points.length);
         for (Point point : points) {
             if (point == null) throw new IllegalArgumentException();
         }
+        checkForRepeatedPoints(points);
 
-        Arrays.sort(this.points);
-        checkForRepeatedPoints();
+        // getLineSegmentsFromPoints(Arrays.copyOf(points, points.length));
 
-        Arrays.sort(this.points, ORIGIN.slopeOrder());
-        this.segments = generateSegments();
+        Point[] pointsNaturalOrder = Arrays.copyOf(points, points.length);
+        Point[] pointsSlopeOrder = Arrays.copyOf(points, points.length);
+
+        ArrayList<LineSegment> lineSegments = new ArrayList<>();
+
+        Arrays.sort(pointsNaturalOrder);
+        Arrays.sort(pointsSlopeOrder);
+
+        for (int i = 0; i < pointsNaturalOrder.length; i++) {
+            Point origin = pointsNaturalOrder[i];
+            Point lineBeginning = null;
+            Arrays.sort(pointsSlopeOrder);
+            Arrays.sort(pointsSlopeOrder, origin.slopeOrder());
+            int pointsCount = 1;
+            for (int k = i + 1; k < pointsSlopeOrder.length - 1; k++) {
+
+                double currentPointSlopeToOrigin = pointsSlopeOrder[k].slopeTo(origin);
+                double nextPointSlopeToOrigin = pointsSlopeOrder[k + 1].slopeTo(origin);
+
+                if (currentPointSlopeToOrigin == nextPointSlopeToOrigin) {
+                    pointsCount++;
+
+                    if (pointsCount == 2) {
+                        lineBeginning = pointsSlopeOrder[k];
+                        pointsCount++;
+                    }
+                    else if (pointsCount >= 4 && k + 1 == pointsSlopeOrder.length - 1) {
+                        if (lineBeginning.compareTo(origin) > 0)
+                            lineSegments.add(
+                                    new LineSegment(lineBeginning, pointsSlopeOrder[k + 1]));
+                        pointsCount = 1;
+                    }
+
+                }
+
+                else if (pointsCount >= 4) {
+                    if (lineBeginning.compareTo(origin) > 0)
+                        lineSegments.add(new LineSegment(origin, pointsSlopeOrder[k]));
+                    pointsCount = 1;
+                }
+                else pointsCount = 1;
+
+            }
+        }
+
+        segments = lineSegments.toArray(new LineSegment[0]);
+
+        // this.segments = generateSegments();
     }
 
-    private void checkForRepeatedPoints() {
+    private void checkForRepeatedPoints(Point[] points) {
         for (int i = 0; i < points.length; i++) {
             if (i > 0 && Double.compare(points[i].slopeTo(points[i - 1]),
                                         Double.NEGATIVE_INFINITY) == 0) {
@@ -40,36 +81,10 @@ public class FastCollinearPoints {
         }
     }
 
-    private LineSegment[] generateSegments() {
-        ArrayList<LineSegment> lineCombinations = new ArrayList<>();
 
-        Point start = null;
-        Point end = null;
-        int counter = 0;
-
-        for (int i = 0; i < this.points.length; i++) {
-
-            for (int j = i + 1; j < this.points.length; j++) {
-                if (ORIGIN.slopeTo(this.points[i]) == ORIGIN.slopeTo(this.points[j])) {
-                    if (counter == 0) start = this.points[i];
-
-                    counter++;
-                }
-                else {
-                    if (counter >= 2) {
-                        end = this.points[j - 1];
-                        i = j - 1;
-                        lineCombinations.add(new LineSegment(start, end));
-                    }
-                    counter = 0;
-                    break;
-                }
-            }
-        }
-
-        LineSegment[] segments = new LineSegment[lineCombinations.size()];
-        return lineCombinations.toArray(segments);
-    }
+    // private ArrayList<LineSegment> getLineSegmentsFromPoints(Point[] points) {
+    //
+    // }
 
     // the number of line segments
     public int numberOfSegments() {
