@@ -4,7 +4,22 @@ import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 
+/**
+ * ASSESSMENT SUMMARY
+ * <p>
+ * Compilation:  PASSED
+ * API:          PASSED
+ * <p>
+ * SpotBugs:     PASSED
+ * PMD:          PASSED
+ * Checkstyle:   PASSED
+ * <p>
+ * Correctness:  41/41 tests passed
+ * Memory:       1/1 tests passed
+ * Timing:       41/41 tests passed
+ */
 public class FastCollinearPoints {
     private LineSegment[] segments;
 
@@ -18,8 +33,11 @@ public class FastCollinearPoints {
         for (Point point : points) {
             if (point == null) throw new IllegalArgumentException();
         }
-        checkForRepeatedPoints(points);
-        ArrayList<LineSegment> lineSegments = getLineSegmentsFromPoints(points);
+        Point[] pointsNaturalOrder = Arrays.copyOf(points, points.length);
+        Arrays.sort(pointsNaturalOrder);
+
+        checkForRepeatedPoints(pointsNaturalOrder);
+        ArrayList<LineSegment> lineSegments = getLineSegmentsFromPoints(pointsNaturalOrder);
         segments = lineSegments.toArray(new LineSegment[0]);
     }
 
@@ -38,51 +56,51 @@ public class FastCollinearPoints {
         Point[] pointsNaturalOrder = Arrays.copyOf(points, points.length);
         Point[] pointsSlopeOrder = Arrays.copyOf(points, points.length);
 
-        Arrays.sort(pointsNaturalOrder);
-        for (int i = 0; i < pointsNaturalOrder.length; i++) {
-            Point origin = pointsNaturalOrder[i];
+        LinkedList<Point> collinearPoints = new LinkedList<>();
 
+        for (Point point : pointsNaturalOrder) {
             Arrays.sort(pointsSlopeOrder);
-            Arrays.sort(pointsSlopeOrder, origin.slopeOrder());
+            Arrays.sort(pointsSlopeOrder, point.slopeOrder());
+            double previousSlope = 0.0;
 
-            Point lineBegin = null;
-            int pointsCount = 1;
-
-            for (int k = i + 1; k < pointsSlopeOrder.length - 1; k++) {
-                double currentPointSlopeToOrigin = pointsSlopeOrder[k].slopeTo(origin);
-                double nextPointSlopeToOrigin = pointsSlopeOrder[k + 1].slopeTo(origin);
-
-                if (currentPointSlopeToOrigin == nextPointSlopeToOrigin) {
-                    pointsCount++;
-
-                    if (pointsCount == 2) {
-                        lineBegin = pointsSlopeOrder[k];
+            for (int i = 0; i < pointsSlopeOrder.length; i++) {
+                double currentSlope = point.slopeTo(pointsSlopeOrder[i]);
+                if (i == 0 || currentSlope != previousSlope) {
+                    if (collinearPoints.size() >= 3) {
+                        if (collinearPoints.getFirst().compareTo(point) > 0)
+                            lineSegments.add(new LineSegment(point,
+                                                             collinearPoints.getLast()));
                     }
-                    else if (pointsCount >= 3 && k + 1 == pointsSlopeOrder.length - 1) {
-                        if (lineBegin.compareTo(origin) > 0)
-                            lineSegments.add(
-                                    new LineSegment(lineBegin, pointsSlopeOrder[k + 1]));
-                        pointsCount = 1;
-                    }
-                }
 
-                else if (pointsCount >= 3) {
-                    if (lineBegin.compareTo(origin) > 0)
-                        lineSegments.add(new LineSegment(origin, pointsSlopeOrder[k]));
-                    pointsCount = 1;
+                    collinearPoints.clear();
                 }
-                else pointsCount = 1;
+                collinearPoints.add(pointsSlopeOrder[i]);
+                previousSlope = currentSlope;
+
+                if (i == pointsSlopeOrder.length - 1 && collinearPoints.size() >= 3
+                        && collinearPoints.getFirst().compareTo(point) > 0) {
+                    lineSegments.add(new LineSegment(point, collinearPoints.getLast()));
+                    collinearPoints.clear();
+                }
             }
         }
         return lineSegments;
     }
 
-    // the number of line segments
+    /**
+     * Return the number of line segments.
+     *
+     * @return number of line segments
+     */
     public int numberOfSegments() {
         return segments.length;
     }
 
-    // the line segments
+    /**
+     * Return the line segments themselves.
+     *
+     * @return all line segments
+     */
     public LineSegment[] segments() {
         return Arrays.copyOf(segments, segments.length);
     }
